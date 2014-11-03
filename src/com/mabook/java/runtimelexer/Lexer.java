@@ -37,10 +37,17 @@ public class Lexer {
 
 	private RuleSet ruleSet;
 
+	private OnMatchListener listener = null;
+	
 	public Lexer(RuleSet ruleSet) {
 		this.setRuleSet(ruleSet);
 	}
-
+	
+	public Lexer(RuleSet ruleSet, OnMatchListener listener) {
+		this.setRuleSet(ruleSet);
+		this.setListener(listener);
+	}
+	
 	boolean stateChanged = true;
 	private ArrayList<State> stateStack = new ArrayList<State>();
 	private HashSet<Flag> flagSet = new HashSet<Flag>();
@@ -106,12 +113,11 @@ public class Lexer {
 		return curRules;
 	}
 
-	public void lex(CharSequence text, boolean autoSkip) {
-		lex(text, autoSkip, null);
+	public void lex(CharSequence text) {
+		lex2(text, this.listener);
 	}
-
-	public void lex(CharSequence text, boolean autoSkip,
-			OnMatchListener listener) {
+	
+	public void lex(CharSequence text, OnMatchListener listener) {
 		reset();
 		while (text.length() != 0) {
 			List<Rule> rules = getCurrentRules();
@@ -153,7 +159,7 @@ public class Lexer {
 			}
 
 			if (!matched) {
-				if (autoSkip) {
+				if (ruleSet.useAutoSkip()) {
 					if (listener != null) {
 						MatchResult result = new MatchResult(AUTOSKIP,
 								subText.subSequence(0, 1));
@@ -167,6 +173,93 @@ public class Lexer {
 		}
 	}
 
+	
+	public static class Bench{
+		long count = 0;
+		long last = -1;
+		long sum = 0;
+		String name = null;
+		public Bench(String name){
+			this.name = name;
+			last = System.currentTimeMillis();
+		}
+		
+		public void begin(){
+			last = System.currentTimeMillis();
+		}
+		public void end(){
+			sum += System.currentTimeMillis() - last;
+			count++;
+		}
+		
+		@Override
+		public String toString(){
+			if(count == 0){
+				return null;
+			}
+			return String.format("[%s] total: %dmsec, avr: %fmsec, count: %d", this.name, sum, (double)sum / (double)count, count);
+		}
+	}
+	
+	
+	public void lex2(CharSequence text, OnMatchListener listener) {
+		reset();
+		
+		while (text.length() != 0) {
+			List<Rule> rules = getCurrentRules();
+			boolean matched = false;
+
+			CharSequence subText = text;
+			for (Rule rule : rules) {
+				ArrayList<Token> tokens = rule.getTokens();
+				StringBuilder sb = new StringBuilder();
+
+				
+				boolean subMatched = true;
+				for (Token t : tokens) {
+					Matcher matcher = t.getPattern().matcher(subText);
+					
+					if (matcher.find()) {
+						sb.append(matcher.group());
+						subText = subText.subSequence(matcher.end(),
+								subText.length());
+					} else {
+						subMatched = false;
+						subText = text;
+						break;
+					}
+				}
+
+				if (subMatched) {
+					matched = true;
+					OnMatchListener ruleListener = rule.getListener();
+					MatchResult result = new MatchResult(rule, sb);
+					if (ruleListener != null) {
+						result = ruleListener.onMatch(this, result);
+					}
+					if (listener != null) {
+						result = listener.onMatch(this, result);
+					}
+					text = subText;
+					break;
+				}
+
+			}
+			if (!matched) {
+				if (ruleSet.useAutoSkip()) {
+					if (listener != null) {
+						MatchResult result = new MatchResult(AUTOSKIP,
+								subText.subSequence(0, 1));
+						result = listener.onMatch(this, result);
+					}
+					text = subText.subSequence(1, subText.length());
+				} else {
+					throw new NotExpectedTokenException(text);
+				}
+			}
+		}
+	}
+	
 	public RuleSet getRuleSet() {
 		return ruleSet;
 	}
@@ -174,4 +267,13 @@ public class Lexer {
 	public void setRuleSet(RuleSet ruleSet) {
 		this.ruleSet = ruleSet;
 	}
+
+	public OnMatchListener getListener() {
+		return listener;
+	}
+
+	public void setListener(OnMatchListener listener) {
+		this.listener = listener;
+	}
+
 }

@@ -93,7 +93,13 @@ public class RuleSet {
 
 	private HashMap<Context, ArrayList<Rule>> ruleMap = new HashMap<Context, ArrayList<Rule>>();
 
+	private boolean autoSkip = true;
+	
 	public RuleSet() {
+	}
+	
+	public RuleSet(boolean useAutoSkip) {
+		this.setUseAutoSkip(useAutoSkip);
 	}
 
 	public List<Rule> getRules(Context context) {
@@ -110,6 +116,14 @@ public class RuleSet {
 
 	public RuleSet appendRule(Rule rule) {
 		return this.appendRule(DEFAULT, rule);
+	}
+
+	public boolean useAutoSkip() {
+		return autoSkip;
+	}
+
+	public void setUseAutoSkip(boolean useAutoSkip) {
+		this.autoSkip = useAutoSkip;
 	}
 
 }
