@@ -134,7 +134,8 @@ public class Lexer {
 					Matcher matcher = t.getPattern().matcher(subText);
 					if (matcher.find()) {
 						tokenMatchers.add(new TokenMatcher(t, matcher));
-						sb.append(matcher.group());
+//						sb.append(matcher.group());
+						sb.append(subText.subSequence(0, matcher.end()));
 						subText = subText.subSequence(matcher.end(),
 								subText.length());
 					} else {

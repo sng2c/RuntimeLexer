@@ -122,7 +122,6 @@ public class LexerTest {
 			int cnt=0;
 			@Override
 			public MatchResult onMatch(Lexer lexer, MatchResult result) {
-				System.out.println(lexer);
 				if( "FIELD".equals(result.getRule().getName()) ){
 					lexer.pushState(STATE_VALUE);
 				}
