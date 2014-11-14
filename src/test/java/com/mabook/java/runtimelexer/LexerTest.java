@@ -1,9 +1,10 @@
 package com.mabook.java.runtimelexer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.Assert.*;
 import org.junit.Test;
+import org.junit.Assert;
+
+
 
 import com.mabook.java.runtimelexer.Lexer.NotExpectedTokenException;
 import com.mabook.java.runtimelexer.Rule.OnMatchListener;
@@ -115,20 +116,21 @@ public class LexerTest {
 		ruleSet.appendRule(new Rule("FIELD", new Token("FIELD","(?i)([a-z0-9_]+):\\s*")));
 		ruleSet.appendRule(STATE_VALUE, new Rule("VALUE", new Token("VALUE","([^\\n]+)\\n?")));
 		
+		
 		OnMatchListener listener = new OnMatchListener() {
+			String expected[] = {"NAME","KHS","AGE","36"};
+			int cnt=0;
 			@Override
 			public MatchResult onMatch(Lexer lexer, MatchResult result) {
 				System.out.println(lexer);
 				if( "FIELD".equals(result.getRule().getName()) ){
-					System.out.println(result.getTokenMatchers().get(0).getToken());
-					System.out.println(result.getTokenMatchers().get(0).getMatcher().group(1));
 					lexer.pushState(STATE_VALUE);
 				}
 				else if( "VALUE".equals(result.getRule().getName()) ){
-					System.out.println(result.getTokenMatchers().get(0).getToken());
-					System.out.println(result.getTokenMatchers().get(0).getMatcher().group(1));
 					lexer.popState();
 				}
+				assertEquals(expected[cnt], result.getTokenMatchers().get(0).getMatcher().group(1));
+				cnt++;
 				return result;
 			}
 		};
