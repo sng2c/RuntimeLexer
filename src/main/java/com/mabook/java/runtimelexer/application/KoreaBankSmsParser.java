@@ -13,7 +13,7 @@ public class KoreaBankSmsParser {
         ruleSet = new RuleSet();
         ruleSet.appendRule(new Rule("HEADER","\\[Web발신\\]"));
         ruleSet.appendRule(new Rule("HEADER","\\(Web발신\\)"));
-        ruleSet.appendRule(new Rule("MONEY_WON_TOTAL","누적\\s*([\\d,]+)원"));
+        ruleSet.appendRule(new Rule("MONEY_TOTAL","누적\\s*([\\d,]+)원"));
         ruleSet.appendRule(new Rule("MONEY","([\\d,]+)원"));
         ruleSet.appendRule(new Rule("MONEY","USD([\\d,\\.]+)"));
         ruleSet.appendRule(new Rule("CARD","\\S+\\([\\d\\*]{4}\\)"));
