@@ -52,7 +52,7 @@ bintray {
     pkg {
         repo = 'maven'
         name = project.name
-        userOrg = bintray_user
+        userOrg = System.getenv('BINTRAY_USER')
         licenses = ['Apache-2.0']
         vcsUrl = 'https://github.com/sng2c/RuntimeLexer.git'
         labels = ['runtime','lexer','parser']
